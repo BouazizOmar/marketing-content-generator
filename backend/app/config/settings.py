@@ -17,10 +17,8 @@ class Settings:
     
     # CORS Configuration
     CORS_ORIGINS: list = [
-        "http://localhost:3000",  # React dev server
-        "http://localhost:5173",  # Vite dev server
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5173",
+        "http://localhost:3001",  # Next.js dev server
+        "http://127.0.0.1:3001",
     ]
     
     # API Configuration

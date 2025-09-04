@@ -44,15 +44,11 @@ class ContentAgent:
 
         PROMPT: {prompt}
         
-        CURRENT MARKETING TRENDS:
-        {trends}
-        
         ADDITIONAL CONTEXT:
         {context}
         
         INSTRUCTIONS:
         - Create compelling, actionable marketing content
-        - Incorporate relevant trends naturally
         - Use professional but engaging language
         - Include specific examples and actionable tips
         - Keep the tone appropriate for the target audience
@@ -64,18 +60,15 @@ class ContentAgent:
         self.fallback_prompt = ChatPromptTemplate.from_template("""
         Create marketing content for: {prompt}
         
-        Focus on: {trends}
-        
         Generate engaging marketing content:
         """)
     
-    def generate_content_with_llm(self, prompt: str, trends: List[str], context: str = "") -> str:
+    def generate_content_with_llm(self, prompt: str, context: str = "") -> str:
         """
         Generate content using OpenAI language model.
         
         Args:
             prompt: The main content generation prompt
-            trends: List of current marketing trends
             context: Additional context from uploaded files
             
         Returns:
@@ -83,15 +76,12 @@ class ContentAgent:
         """
         if not self.llm:
             logger.warning("LLM not available, using fallback content generation")
-            return self._generate_fallback_content(prompt, trends, context)
+            return self._generate_fallback_content(prompt, context)
         
         try:
-            # Format trends for prompt
-            trends_text = "\n".join([f"- {trend}" for trend in trends])
-            
             # Create the chain
             chain = (
-                {"prompt": RunnablePassthrough(), "trends": lambda x: trends_text, "context": lambda x: context}
+                {"prompt": RunnablePassthrough(), "context": lambda x: context}
                 | self.content_prompt
                 | self.llm
                 | StrOutputParser()
@@ -104,40 +94,36 @@ class ContentAgent:
             
         except Exception as e:
             logger.error(f"Error generating content with LLM: {str(e)}")
-            return self._generate_fallback_content(prompt, trends, context)
+            logger.error(f"LLM error type: {type(e)}")
+            logger.error(f"LLM error details: {e}")
+            return self._generate_fallback_content(prompt, context)
     
-    def _generate_fallback_content(self, prompt: str, trends: List[str], context: str = "") -> str:
+    def _generate_fallback_content(self, prompt: str, context: str = "") -> str:
         """
         Generate fallback content when LLM is not available.
         
         Args:
             prompt: The main content generation prompt
-            trends: List of current marketing trends
             context: Additional context from uploaded files
             
         Returns:
             Generated fallback content
         """
         # Simple template-based content generation
-        trends_text = ", ".join(trends[:3])  # Use first 3 trends
-        
         fallback_content = f"""
 # Marketing Content: {prompt}
 
 ## Overview
-Based on your request for "{prompt}", here's a comprehensive marketing strategy incorporating current industry trends.
-
-## Key Trends to Leverage
-{chr(10).join([f"- {trend}" for trend in trends[:5]])}
+Based on your request for "{prompt}", here's a comprehensive marketing strategy.
 
 ## Strategic Recommendations
-1. **Content Strategy**: Develop content that addresses {trends[0] if trends else "current market needs"}
-2. **Audience Engagement**: Focus on {trends[1] if len(trends) > 1 else "customer engagement"}
-3. **Channel Optimization**: Leverage {trends[2] if len(trends) > 2 else "digital channels"}
+1. **Content Strategy**: Develop content that addresses your target audience
+2. **Audience Engagement**: Focus on customer engagement and value delivery
+3. **Channel Optimization**: Leverage digital channels effectively
 
 ## Action Items
-- Create compelling content around {trends[0] if trends else "your key message"}
-- Implement {trends[1] if len(trends) > 1 else "best practices"} in your marketing
+- Create compelling content around your key message
+- Implement best practices in your marketing
 - Monitor performance and adjust strategy based on results
 
 ## Additional Context
@@ -163,7 +149,6 @@ Based on your request for "{prompt}", here's a comprehensive marketing strategy 
         try:
             # Extract required fields from state
             prompt = state.get("prompt", "")
-            trends = state.get("trends", [])
             context = state.get("context", "")
             
             if not prompt:
@@ -172,7 +157,7 @@ Based on your request for "{prompt}", here's a comprehensive marketing strategy 
                 return state
             
             # Generate content
-            content = self.generate_content_with_llm(prompt, trends, context)
+            content = self.generate_content_with_llm(prompt, context)
             
             # Update state with generated content
             state["content"] = content
@@ -182,5 +167,7 @@ Based on your request for "{prompt}", here's a comprehensive marketing strategy 
             
         except Exception as e:
             logger.error(f"Error in content agent: {str(e)}")
+            logger.error(f"Content agent error type: {type(e)}")
+            logger.error(f"Content agent error details: {e}")
             state["content"] = f"Error generating content: {str(e)}"
             return state

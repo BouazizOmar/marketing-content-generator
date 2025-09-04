@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from .config.settings import settings
-from .routes import generate, trends, analyze
+from .routes import generate
 
 # Configure logging
 logging.basicConfig(
@@ -59,18 +59,6 @@ app.include_router(
     tags=["Content Generation"]
 )
 
-app.include_router(
-    trends.router,
-    prefix=f"{settings.API_PREFIX}/trends",
-    tags=["Marketing Trends"]
-)
-
-app.include_router(
-    analyze.router,
-    prefix=f"{settings.API_PREFIX}/analysis",
-    tags=["Content Analysis"]
-)
-
 # Root endpoint
 @app.get("/")
 async def root():
@@ -102,18 +90,12 @@ async def api_info():
         "version": settings.APP_VERSION,
         "endpoints": {
             "content_generation": f"{settings.API_PREFIX}/content/generate",
-            "marketing_trends": f"{settings.API_PREFIX}/trends",
-            "sentiment_analysis": f"{settings.API_PREFIX}/analysis/analyze",
-            "workflow_info": f"{settings.API_PREFIX}/content/workflow-info",
-            "real_trends": f"{settings.API_PREFIX}/trends/real",
-            "detailed_analysis": f"{settings.API_PREFIX}/analysis/analyze/detailed"
+            "workflow_info": f"{settings.API_PREFIX}/content/workflow-info"
         },
         "features": [
             "LangGraph multi-agent workflow",
             "OpenAI GPT-4o-mini integration",
             "File parsing (CSV/PDF)",
-            "Sentiment analysis",
-            "Marketing trends integration",
             "CORS enabled for React frontend"
         ]
     }

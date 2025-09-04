@@ -12,8 +12,6 @@ export function Header() {
 
   const navItems = [
     { path: "/generate", label: "Generate" },
-    { path: "/trends", label: "Trends" },
-    { path: "/analyze", label: "Analyze" },
   ]
 
   return (

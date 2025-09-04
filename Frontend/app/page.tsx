@@ -1,13 +1,16 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { Header } from "@/components/header"
 import { ContentGenerator } from "@/components/content-generator"
-import { TrendsViewer } from "@/components/trends-viewer"
-import { SentimentAnalyzer } from "@/components/sentiment-analyzer"
 import { Toaster } from "@/components/ui/toaster"
 
 export default function App() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return null
+
   return (
     <Router>
       <div className="min-h-screen bg-background">
@@ -16,11 +19,9 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/generate" replace />} />
             <Route path="/generate" element={<ContentGenerator />} />
-            <Route path="/trends" element={<TrendsViewer />} />
-            <Route path="/analyze" element={<SentimentAnalyzer />} />
           </Routes>
         </main>
-        <footer className="border-t bg-background py-6 text-center text-sm text-muted-foreground">
+        <footer className="border-t border-t-border bg-background py-6 text-center text-sm text-muted-foreground">
           © 2025 ContentGen AI
         </footer>
         <Toaster />

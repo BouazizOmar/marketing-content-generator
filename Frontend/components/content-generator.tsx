@@ -69,9 +69,13 @@ export function ContentGenerator() {
       })
     } catch (error) {
       console.error("[v0] Content generation error:", error)
+      const isNetworkError =
+        error instanceof Error && (error.message === "Network Error" || error.message.includes("ECONNREFUSED"))
       toast({
         title: "Generation failed",
-        description: "Failed to generate content. Please try again.",
+        description: isNetworkError
+          ? "Cannot connect to backend. Make sure FastAPI server is running on localhost:8000"
+          : "Failed to generate content. Please try again.",
         variant: "destructive",
       })
     } finally {
